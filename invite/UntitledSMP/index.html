@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MineAuth — You've been invited</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg:#0b0e14; --bg2:#0f1319; --panel:#141820; --panel2:#1a1f2e;
+  --border:#1e2535; --border2:#252d3f;
+  --accent:#3b82f6; --accent-glow:#3b82f620; --accent-dim:#3b82f612; --accent-h:#60a5fa;
+  --green:#22c55e; --green-dim:#22c55e18; --green-glow:#22c55e30;
+  --text:#f0f4ff; --text-2:#8892a4; --text-3:#4a5568;
+  --radius:10px;
+}
+html,body { min-height:100vh; background:var(--bg); color:var(--text); font-family:'Plus Jakarta Sans',sans-serif; -webkit-font-smoothing:antialiased; }
+body { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:2rem 1rem; position:relative; overflow:hidden; }
+
+/* Background glow blobs */
+.bg-glow-1 {
+  position:fixed; top:-100px; left:50%; transform:translateX(-50%);
+  width:800px; height:500px;
+  background:radial-gradient(ellipse, #22c55e0a 0%, transparent 65%);
+  pointer-events:none;
+}
+.bg-glow-2 {
+  position:fixed; bottom:-150px; right:-100px;
+  width:500px; height:500px;
+  background:radial-gradient(ellipse, #3b82f608 0%, transparent 65%);
+  pointer-events:none;
+}
+
+/* Subtle grid */
+.bg-grid {
+  position:fixed; inset:0;
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size:60px 60px;
+  opacity:0.18;
+  pointer-events:none;
+}
+
+/* Navbar */
+.topbar { position:fixed; top:0; left:0; right:0; height:56px; background:#0b0e14e0; backdrop-filter:blur(12px); border-bottom:1px solid var(--border); display:flex; align-items:center; padding:0 2rem; z-index:100; gap:.75rem; }
+.topbar-logo { display:flex; align-items:center; gap:.6rem; font-size:.95rem; font-weight:700; color:var(--text); letter-spacing:-.02em; text-decoration:none; }
+.logo-mark { width:28px; height:28px; background:var(--accent); border-radius:7px; display:flex; align-items:center; justify-content:center; box-shadow:0 0 16px #3b82f640; flex-shrink:0; }
+.topbar-sep { width:1px; height:20px; background:var(--border2); margin:0 .25rem; }
+.topbar-sub { font-size:.8rem; color:var(--text-2); font-weight:500; }
+.topbar-ssl { margin-left:auto; display:flex; align-items:center; gap:.4rem; font-size:.72rem; color:var(--green); font-family:'JetBrains Mono',monospace; font-weight:500; }
+.ssl-dot { width:6px; height:6px; background:var(--green); border-radius:50%; box-shadow:0 0 6px var(--green); animation:blink 2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
+
+/* Main card */
+.wrapper { position:relative; z-index:1; width:100%; max-width:520px; margin-top:4rem; animation:fadeUp .5s cubic-bezier(.22,.68,0,1.2) both; }
+@keyframes fadeUp { from{opacity:0;transform:translateY(24px)} to{opacity:1;transform:translateY(0)} }
+
+.card {
+  background:var(--panel);
+  border:1px solid var(--border);
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 12px 60px #00000070, 0 1px 0 #ffffff06 inset, 0 0 0 1px #22c55e08;
+}
+
+/* Server banner area */
+.server-banner {
+  position:relative;
+  height:130px;
+  background:linear-gradient(135deg, #0d1f12 0%, #0a1a1f 50%, #0d1020 100%);
+  display:flex;
+  align-items:flex-end;
+  padding:0 2rem 1.25rem;
+  border-bottom:1px solid var(--border);
+  overflow:hidden;
+}
+
+/* Animated particle dots */
+.server-banner::before {
+  content:'';
+  position:absolute;
+  inset:0;
+  background-image:
+    radial-gradient(circle, #22c55e18 1px, transparent 1px),
+    radial-gradient(circle, #3b82f610 1px, transparent 1px);
+  background-size: 30px 30px, 50px 50px;
+  background-position: 0 0, 15px 15px;
+  animation: drift 8s linear infinite;
+}
+@keyframes drift { from{background-position:0 0,15px 15px} to{background-position:30px 30px,45px 45px} }
+
+.server-banner::after {
+  content:'';
+  position:absolute;
+  bottom:0; left:0; right:0; height:60px;
+  background:linear-gradient(transparent, var(--panel));
+  pointer-events:none;
+}
+
+.server-icon {
+  width:72px; height:72px;
+  border-radius:16px;
+  background:linear-gradient(135deg, #14311c, #1a3d24);
+  border:3px solid var(--panel);
+  display:flex; align-items:center; justify-content:center;
+  position:relative; z-index:1;
+  box-shadow:0 4px 20px #00000060, 0 0 0 1px #22c55e20;
+  flex-shrink:0;
+  margin-bottom:-8px;
+}
+
+/* Card body */
+.card-body { padding:1.5rem 2rem 2rem; }
+
+.invite-tag {
+  display:inline-flex; align-items:center; gap:.4rem;
+  font-size:.7rem; font-weight:600; color:var(--text-2);
+  font-family:'JetBrains Mono',monospace; letter-spacing:.08em;
+  text-transform:uppercase; margin-bottom:.75rem;
+}
+
+.invite-label {
+  font-size:.88rem; font-weight:500; color:var(--text-2);
+  margin-bottom:.35rem;
+}
+
+.server-name {
+  font-size:2rem; font-weight:800; letter-spacing:-.04em;
+  color:var(--text); line-height:1.1; margin-bottom:.75rem;
+}
+
+.server-meta {
+  display:flex; align-items:center; gap:1rem;
+  margin-bottom:2rem;
+}
+
+.meta-chip {
+  display:flex; align-items:center; gap:.4rem;
+  font-size:.78rem; font-weight:600; color:var(--text-2);
+}
+
+.online-dot { width:8px; height:8px; background:var(--green); border-radius:50%; box-shadow:0 0 6px var(--green-glow); }
+
+.divider { height:1px; background:var(--border); margin-bottom:1.75rem; }
+
+/* The big join button */
+.btn-join {
+  display:flex; align-items:center; justify-content:center; gap:.75rem;
+  width:100%; padding:1.1rem 2rem;
+  background:var(--green);
+  color:#0b1a0e;
+  font-family:'Plus Jakarta Sans',sans-serif;
+  font-size:1.05rem;
+  font-weight:800;
+  letter-spacing:-.02em;
+  border:none; border-radius:var(--radius);
+  cursor:pointer;
+  transition:all .2s;
+  box-shadow:0 4px 24px var(--green-glow), 0 1px 0 #ffffff30 inset;
+  text-decoration:none;
+  position:relative;
+  overflow:hidden;
+}
+
+.btn-join::before {
+  content:'';
+  position:absolute;
+  top:0; left:-100%; right:100%; bottom:0;
+  background:linear-gradient(90deg, transparent, #ffffff20, transparent);
+  transition:left .5s, right .5s;
+}
+.btn-join:hover::before { left:100%; right:-100%; }
+.btn-join:hover { background:#4ade80; box-shadow:0 6px 32px #22c55e50, 0 1px 0 #ffffff40 inset; transform:translateY(-2px); }
+.btn-join:active { transform:translateY(0); }
+
+.btn-join-icon {
+  width:28px; height:28px;
+  background:#0b1a0e30;
+  border-radius:8px;
+  display:flex; align-items:center; justify-content:center;
+}
+
+/* "Powered by" footer */
+.card-footer { padding:.9rem 2rem; background:var(--bg2); border-top:1px solid var(--border); display:flex; align-items:center; justify-content:space-between; }
+.footer-note { font-size:.72rem; color:var(--text-3); font-weight:500; }
+.footer-brand { display:flex; align-items:center; gap:.4rem; font-size:.72rem; color:var(--text-3); font-weight:600; text-decoration:none; transition:color .15s; }
+.footer-brand:hover { color:var(--text-2); }
+.footer-brand-mark { width:16px; height:16px; background:var(--accent); border-radius:4px; display:flex; align-items:center; justify-content:center; }
+
+/* Invite code box */
+.invite-code-box {
+  background:var(--panel2);
+  border:1px solid var(--border2);
+  border-radius:var(--radius);
+  padding:.75rem 1rem;
+  margin-bottom:1.25rem;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:1rem;
+}
+.invite-code-label { font-size:.72rem; color:var(--text-3); font-weight:600; letter-spacing:.05em; text-transform:uppercase; margin-bottom:.2rem; font-family:'JetBrains Mono',monospace; }
+.invite-code-val { font-size:.85rem; font-weight:600; color:var(--accent-h); font-family:'JetBrains Mono',monospace; }
+.expires-chip { font-size:.68rem; color:var(--text-3); font-family:'JetBrains Mono',monospace; white-space:nowrap; }
+
+svg { display:inline-block; vertical-align:middle; }
+</style>
+</head>
+<body>
+
+<div class="bg-glow-1"></div>
+<div class="bg-glow-2"></div>
+<div class="bg-grid"></div>
+
+<!-- Navbar -->
+<nav class="topbar">
+  <a href="#" class="topbar-logo">
+    <div class="logo-mark">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="3" y="2" width="10" height="9" rx="1" fill="white" opacity=".9"/><rect x="4" y="4" width="2.5" height="2.5" fill="#3b82f6"/><rect x="9.5" y="4" width="2.5" height="2.5" fill="#3b82f6"/><rect x="5.5" y="7" width="5" height="1.5" fill="#3b82f6"/><rect x="5" y="11" width="6" height="3" rx=".5" fill="white" opacity=".5"/></svg>
+    </div>
+    MineAuth
+  </a>
+  <div class="topbar-sep"></div>
+  <div class="topbar-sub">Server Invite</div>
+  <div class="topbar-ssl"><div class="ssl-dot"></div>Secure Invite</div>
+</nav>
+
+<div class="wrapper">
+  <div class="card">
+
+    <!-- Banner -->
+    <div class="server-banner">
+      <div class="server-icon">
+        <svg width="38" height="38" viewBox="0 0 40 40" fill="none">
+          <!-- Creeper face, large clean -->
+          <rect x="6" y="4" width="28" height="24" rx="3" fill="#22c55e" opacity=".2"/>
+          <rect x="6" y="4" width="28" height="24" rx="3" stroke="#22c55e" stroke-width="1.5"/>
+          <rect x="10" y="10" width="7" height="7" rx="1.5" fill="#22c55e"/>
+          <rect x="23" y="10" width="7" height="7" rx="1.5" fill="#22c55e"/>
+          <rect x="14" y="19" width="4" height="4" rx="1" fill="#22c55e"/>
+          <rect x="22" y="19" width="4" height="4" rx="1" fill="#22c55e"/>
+          <rect x="17" y="21" width="6" height="2.5" rx=".5" fill="#22c55e"/>
+          <rect x="14" y="23" width="4" height="2" rx=".5" fill="#22c55e"/>
+          <rect x="22" y="23" width="4" height="2" rx=".5" fill="#22c55e"/>
+          <!-- body -->
+          <rect x="12" y="28" width="16" height="10" rx="2" fill="#22c55e" opacity=".15"/>
+          <rect x="12" y="28" width="16" height="10" rx="2" stroke="#22c55e" stroke-width="1" opacity=".4"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Body -->
+    <div class="card-body">
+      <div class="invite-tag">
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M10 13l4-4-4-4M2 9h12"/></svg>
+        You have been invited
+      </div>
+
+      <div class="invite-label">You're invited to join</div>
+      <div class="server-name">Untitled SMP</div>
+
+      <div class="server-meta">
+        <div class="meta-chip">
+          <div class="online-dot"></div>
+          Server Online
+        </div>
+        <div class="meta-chip">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="6" r="3"/><path d="M2 14c0-3.3 2.7-6 6-6s6 2.7 6 6"/></svg>
+          Whitelisted Server
+        </div>
+        <div class="meta-chip">
+          <svg width="12" height="12" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M8 14s-6-3.5-6-8a6 6 0 0112 0c0 4.5-6 8-6 8z"/></svg>
+          MineAuth Protected
+        </div>
+      </div>
+
+      <div class="invite-code-box">
+        <div>
+          <div class="invite-code-label">Invite Code</div>
+          <div class="invite-code-val">UntitledSMP</div>
+        </div>
+        <div class="expires-chip">
+          <svg width="11" height="11" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" style="margin-right:3px"><circle cx="8" cy="8" r="6"/><path d="M8 5v3.5l2 2"/></svg>
+          Never expires
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <a href="https://mineauth.vercel.app/invite/UntitledSMP/verify" class="btn-join">
+        <div class="btn-join-icon">
+          <svg width="15" height="15" viewBox="0 0 20 20" fill="none" stroke="#0b1a0e" stroke-width="2.5"><polyline points="5,10 10,5 15,10"/><line x1="10" y1="5" x2="10" y2="16"/></svg>
+        </div>
+        Accept Invite &amp; Join Server
+      </a>
+    </div>
+
+    <div class="card-footer">
+      <div class="footer-note">By joining, you agree to this server's rules and terms.</div>
+      <a href="#" class="footer-brand">
+        <div class="footer-brand-mark">
+          <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><rect x="3" y="2" width="10" height="9" rx="1" fill="white" opacity=".9"/><rect x="5" y="11" width="6" height="3" rx=".5" fill="white" opacity=".5"/></svg>
+        </div>
+        Powered by MineAuth
+      </a>
+    </div>
+
+  </div>
+</div>
+
+</body>
+</html>
